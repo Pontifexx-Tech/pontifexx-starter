@@ -2,6 +2,43 @@
 
 This document provides comprehensive guidance for working with this codebase. It covers the technology stack, architecture, coding standards, and best practices.
 
+## Language Requirement - Dutch (Nederlands)
+
+**IMPORTANT: All user-facing text in this application MUST be in Dutch (Nederlands).**
+
+This includes:
+- Page titles and headings
+- Form labels and placeholders
+- Button text
+- Error messages
+- Success messages
+- Navigation items
+- Tooltips and descriptions
+- Modal content
+- Any text visible to end users
+
+### Examples
+
+| English (DO NOT USE) | Dutch (USE THIS) |
+|---------------------|------------------|
+| Log in | Inloggen |
+| Register | Registreren |
+| Password | Wachtwoord |
+| Email address | E-mailadres |
+| Settings | Instellingen |
+| Save | Opslaan |
+| Cancel | Annuleren |
+| Delete | Verwijderen |
+| Confirm | Bevestigen |
+| Profile | Profiel |
+| Dashboard | Dashboard |
+| Log out | Uitloggen |
+| Forgot password? | Wachtwoord vergeten? |
+| Create account | Account aanmaken |
+| Continue with Microsoft | Doorgaan met Microsoft |
+
+When adding new features or modifying existing ones, always ensure all text is in Dutch.
+
 ## Technology Stack
 
 ### Backend
@@ -11,6 +48,7 @@ This document provides comprehensive guidance for working with this codebase. It
 | PHP | ^8.2 | Runtime |
 | Laravel | 12.x | Backend framework |
 | Laravel Fortify | 1.x | Authentication scaffolding |
+| Laravel Socialite | 5.x | OAuth authentication (Microsoft SSO) |
 | Inertia.js | 2.x | Server-side adapter |
 | Laravel Wayfinder | 0.1.x | Type-safe route generation |
 
@@ -24,6 +62,17 @@ This document provides comprehensive guidance for working with this codebase. It
 | Tailwind CSS | 4.x | Utility-first CSS |
 | Radix UI | Various | Accessible UI primitives |
 | Vite | 7.x | Build tool |
+
+### AI Integration
+
+| Technology | Purpose |
+|------------|---------|
+| NeuronAI | PHP Agentic Framework for AI applications |
+| Anthropic | Claude AI models |
+| OpenAI | GPT models |
+| Gemini | Google AI models |
+| Mistral | Mistral AI models |
+| Ollama | Local AI models |
 
 ### Development Tools
 
@@ -316,7 +365,7 @@ Dark mode is handled via:
 
 ## Authentication
 
-Authentication is powered by Laravel Fortify with the following features:
+Authentication is powered by Laravel Fortify and Laravel Socialite with the following features:
 
 - Login / Logout
 - Registration
@@ -324,12 +373,57 @@ Authentication is powered by Laravel Fortify with the following features:
 - Email verification
 - Two-factor authentication (TOTP)
 - Profile management
+- **Microsoft SSO** (OAuth 2.0 via Azure AD)
+
+### Microsoft SSO Setup
+
+The starter kit includes Microsoft OAuth authentication out of the box. To enable it:
+
+1. **Create an Azure AD App Registration**
+   - Go to [Azure Portal](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade)
+   - Click "New registration"
+   - Name your application
+   - Set redirect URI to: `{APP_URL}/auth/microsoft/callback`
+   - Note the Application (client) ID and Directory (tenant) ID
+
+2. **Create a Client Secret**
+   - In your app registration, go to "Certificates & secrets"
+   - Create a new client secret
+   - Copy the secret value immediately (it won't be shown again)
+
+3. **Configure Environment Variables**
+   ```env
+   MICROSOFT_CLIENT_ID=your-client-id
+   MICROSOFT_CLIENT_SECRET=your-client-secret
+   MICROSOFT_TENANT_ID=common
+   MICROSOFT_REDIRECT_URI="${APP_URL}/auth/microsoft/callback"
+   ```
+
+4. **Tenant Configuration**
+   - `common` - Any Microsoft account (personal + work/school)
+   - `organizations` - Work/school accounts only
+   - `consumers` - Personal Microsoft accounts only
+   - `{tenant-id}` - Specific organization only
+
+### OAuth Routes
+
+| Route | Purpose |
+|-------|---------|
+| `GET /auth/microsoft/redirect` | Redirects to Microsoft login |
+| `GET /auth/microsoft/callback` | Handles OAuth callback |
+
+### How OAuth Users Work
+
+- Users can sign in with Microsoft without a password
+- If a user exists with the same email, their account is linked to Microsoft
+- New users are created automatically with verified email
+- User avatars are fetched from Microsoft profile
 
 ### Auth Pages
 
 Located in `resources/js/pages/auth/`:
-- `login.tsx`
-- `register.tsx`
+- `login.tsx` - Login with email/password or Microsoft
+- `register.tsx` - Register with email/password or Microsoft
 - `reset-password.tsx`
 - `forgot-password.tsx`
 - `verify-email.tsx`
@@ -368,6 +462,12 @@ APP_URL=http://pontifexx-template.test
 DB_CONNECTION=sqlite
 
 MAIL_MAILER=log
+
+# Microsoft OAuth (Azure AD)
+MICROSOFT_CLIENT_ID=your-client-id
+MICROSOFT_CLIENT_SECRET=your-client-secret
+MICROSOFT_TENANT_ID=common
+MICROSOFT_REDIRECT_URI="${APP_URL}/auth/microsoft/callback"
 ```
 
 ## Best Practices
@@ -416,6 +516,164 @@ php artisan inertia:start-ssr
 php artisan migrate:fresh
 ```
 
+## AI Integration (NeuronAI)
+
+This starter kit is pre-configured for AI integration using NeuronAI, a PHP Agentic Framework for building AI-powered applications.
+
+### Installation
+
+```bash
+composer require neuron-core/neuron-laravel
+```
+
+### Supported AI Providers
+
+| Provider | Models | Use Case |
+|----------|--------|----------|
+| Anthropic | Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Haiku | Best for complex reasoning, coding, analysis |
+| OpenAI | GPT-4, GPT-4 Turbo, GPT-3.5 Turbo | General purpose, widely supported |
+| Google Gemini | Gemini Pro, Gemini Ultra | Multimodal, Google ecosystem |
+| Mistral | Mistral Large, Mistral Medium, Mistral Small | European provider, open weights |
+| Ollama | Llama 3, Mistral, CodeLlama, etc. | Local/private deployment |
+
+### Environment Configuration
+
+Add your API keys to `.env`:
+
+```env
+# Anthropic (recommended)
+ANTHROPIC_API_KEY=sk-ant-...
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+
+# Google Gemini
+GEMINI_API_KEY=...
+
+# Mistral
+MISTRAL_API_KEY=...
+
+# Ollama (local)
+OLLAMA_HOST=http://localhost:11434
+```
+
+### Artisan Commands
+
+NeuronAI provides artisan commands for scaffolding:
+
+```bash
+# Create an AI agent
+php artisan neuron:agent MyAgent
+
+# Create a RAG (Retrieval-Augmented Generation) setup
+php artisan neuron:rag MyRAG
+
+# Create a custom tool for agents
+php artisan neuron:tool MyTool
+
+# Create a workflow
+php artisan neuron:workflow MyWorkflow
+
+# Create a workflow node
+php artisan neuron:node MyNode
+```
+
+### Creating an AI Agent
+
+Example agent using Anthropic Claude:
+
+```php
+<?php
+
+namespace App\AI\Agents;
+
+use NeuronAI\Agent;
+use NeuronAI\Providers\Anthropic;
+
+class AssistantAgent extends Agent
+{
+    protected function provider(): Anthropic
+    {
+        return new Anthropic(
+            key: config('services.anthropic.key'),
+            model: 'claude-3-5-sonnet-20241022',
+        );
+    }
+
+    public function instructions(): string
+    {
+        return 'Je bent een behulpzame Nederlandse assistent die gebruikers helpt met hun vragen.';
+    }
+}
+```
+
+### Using the Agent
+
+```php
+use App\AI\Agents\AssistantAgent;
+
+$agent = new AssistantAgent();
+$response = $agent->chat('Hoe kan ik een formulier valideren in Laravel?');
+
+echo $response->content;
+```
+
+### Best Practices
+
+1. **Store API keys securely** - Never commit API keys to version control
+2. **Use environment variables** - All keys should come from `.env`
+3. **Implement rate limiting** - Protect against API abuse
+4. **Cache responses** - Cache AI responses when appropriate
+5. **Handle errors gracefully** - AI APIs can fail or timeout
+6. **Monitor usage** - Track API costs and usage
+7. **Use appropriate models** - Choose models based on task complexity
+
+### Recommended Directory Structure
+
+```
+app/
+├── AI/
+│   ├── Agents/           # AI agents
+│   ├── Tools/            # Custom tools for agents
+│   ├── RAG/              # RAG configurations
+│   └── Workflows/        # Multi-step workflows
+```
+
+### Configuration File
+
+Create `config/ai.php` for centralized AI configuration:
+
+```php
+<?php
+
+return [
+    'default' => env('AI_PROVIDER', 'anthropic'),
+
+    'providers' => [
+        'anthropic' => [
+            'key' => env('ANTHROPIC_API_KEY'),
+            'model' => env('ANTHROPIC_MODEL', 'claude-3-5-sonnet-20241022'),
+        ],
+        'openai' => [
+            'key' => env('OPENAI_API_KEY'),
+            'model' => env('OPENAI_MODEL', 'gpt-4-turbo'),
+        ],
+        'gemini' => [
+            'key' => env('GEMINI_API_KEY'),
+            'model' => env('GEMINI_MODEL', 'gemini-pro'),
+        ],
+        'mistral' => [
+            'key' => env('MISTRAL_API_KEY'),
+            'model' => env('MISTRAL_MODEL', 'mistral-large-latest'),
+        ],
+        'ollama' => [
+            'host' => env('OLLAMA_HOST', 'http://localhost:11434'),
+            'model' => env('OLLAMA_MODEL', 'llama3'),
+        ],
+    ],
+];
+```
+
 ## Resources
 
 - [Laravel Documentation](https://laravel.com/docs)
@@ -424,3 +682,6 @@ php artisan migrate:fresh
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [Radix UI Documentation](https://www.radix-ui.com/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs)
+- [NeuronAI Documentation](https://neuron-ai.dev)
+- [Anthropic Documentation](https://docs.anthropic.com)
+- [OpenAI Documentation](https://platform.openai.com/docs)

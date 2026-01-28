@@ -12,7 +12,7 @@ export default function Welcome({
 
     return (
         <>
-            <Head title="Welcome">
+            <Head title="Welkom">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
@@ -21,9 +21,9 @@ export default function Welcome({
             </Head>
             <div className="flex min-h-screen flex-col bg-[#FDFDFC] text-[#1b1b18] dark:bg-[#0a0a0a] dark:text-[#EDEDEC]">
                 {/* Header */}
-                <header className="border-b border-[#e3e3e0] px-6 py-4 dark:border-[#3E3E3A]">
+                <header className="border-b border-[#e3e3e0] px-6 py-2 dark:border-[#3E3E3A]">
                     <div className="mx-auto flex max-w-6xl items-center justify-between">
-                        <AppLogoIcon className="h-8 w-auto" />
+                        <AppLogoIcon className="h-16 w-auto" />
                         <nav className="flex items-center gap-4">
                             {auth.user ? (
                                 <Link
@@ -38,14 +38,14 @@ export default function Welcome({
                                         href={login()}
                                         className="inline-block rounded-md px-5 py-2 text-sm font-medium text-[#1b1b18] hover:bg-[#f5f5f4] dark:text-[#EDEDEC] dark:hover:bg-[#1a1a1a]"
                                     >
-                                        Log in
+                                        Inloggen
                                     </Link>
                                     {canRegister && (
                                         <Link
                                             href={register()}
                                             className="inline-block rounded-md bg-[#203f6c] px-5 py-2 text-sm font-medium text-white hover:bg-[#1a3459]"
                                         >
-                                            Register
+                                            Registreren
                                         </Link>
                                     )}
                                 </>
@@ -61,23 +61,23 @@ export default function Welcome({
                             Pontifexx Starter Kit
                         </h1>
                         <p className="mx-auto mb-8 max-w-2xl text-lg text-[#706f6c] dark:text-[#A1A09A]">
-                            A modern, production-ready starter kit built with
-                            Laravel 12, React 19, Inertia.js, and Tailwind CSS.
-                            Everything you need to build beautiful, fast web
-                            applications.
+                            Een moderne, productieklare starter kit gebouwd met
+                            Laravel 12, React 19, Inertia.js en Tailwind CSS.
+                            Alles wat je nodig hebt om mooie, snelle
+                            webapplicaties te bouwen.
                         </p>
                         <div className="flex justify-center gap-4">
                             <a
                                 href="#features"
                                 className="inline-block rounded-md bg-[#203f6c] px-6 py-3 text-sm font-medium text-white hover:bg-[#1a3459]"
                             >
-                                Explore Features
+                                Ontdek Functies
                             </a>
                             <a
                                 href="#stack"
                                 className="inline-block rounded-md border border-[#e3e3e0] px-6 py-3 text-sm font-medium hover:bg-[#f5f5f4] dark:border-[#3E3E3A] dark:hover:bg-[#1a1a1a]"
                             >
-                                View Stack
+                                Bekijk Stack
                             </a>
                         </div>
                     </div>
@@ -90,32 +90,44 @@ export default function Welcome({
                 >
                     <div className="mx-auto max-w-6xl">
                         <h2 className="mb-12 text-center text-3xl font-semibold">
-                            What's Included
+                            Wat zit erin
                         </h2>
                         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                             <FeatureCard
-                                title="Authentication"
-                                description="Complete authentication system with login, registration, password reset, email verification, and two-factor authentication powered by Laravel Fortify."
+                                title="Authenticatie"
+                                description="Compleet authenticatiesysteem met inloggen, registratie, wachtwoord reset, e-mailverificatie en tweefactorauthenticatie aangedreven door Laravel Fortify."
                             />
                             <FeatureCard
-                                title="Dark Mode"
-                                description="Built-in dark mode support with system preference detection and user override. Seamlessly integrates with SSR for flash-free theme switching."
+                                title="Donkere Modus"
+                                description="Ingebouwde ondersteuning voor donkere modus met systeemvoorkeur detectie en gebruikersoverschrijving. Naadloos geïntegreerd met SSR voor flikkervrije themawisseling."
                             />
                             <FeatureCard
-                                title="Type-Safe Routing"
-                                description="Auto-generated TypeScript route definitions with Wayfinder. Never write a wrong route again with full IDE autocomplete support."
+                                title="Type-veilige Routing"
+                                description="Automatisch gegenereerde TypeScript route definities met Wayfinder. Nooit meer een verkeerde route schrijven met volledige IDE autocomplete ondersteuning."
                             />
                             <FeatureCard
-                                title="UI Components"
-                                description="Pre-built, accessible UI components using Radix UI primitives. Includes buttons, dialogs, dropdowns, forms, and more."
+                                title="UI Componenten"
+                                description="Voorgebouwde, toegankelijke UI componenten met Radix UI primitieven. Inclusief knoppen, dialogen, dropdowns, formulieren en meer."
                             />
                             <FeatureCard
                                 title="Server-Side Rendering"
-                                description="SSR enabled out of the box for better SEO and faster initial page loads. Configured and ready for production."
+                                description="SSR standaard ingeschakeld voor betere SEO en snellere initiële pagina laadtijden. Geconfigureerd en klaar voor productie."
                             />
                             <FeatureCard
-                                title="User Settings"
-                                description="Complete settings pages for profile management, password changes, appearance preferences, and two-factor authentication setup."
+                                title="Gebruikersinstellingen"
+                                description="Complete instellingenpagina's voor profielbeheer, wachtwoordwijzigingen, weergavevoorkeuren en tweefactorauthenticatie setup."
+                            />
+                            <FeatureCard
+                                title="Microsoft SSO"
+                                description="Ingebouwde OAuth authenticatie met Microsoft Azure AD. Gebruikers kunnen inloggen met hun Microsoft account, zowel persoonlijk als zakelijk."
+                            />
+                            <FeatureCard
+                                title="AI Integratie"
+                                description="Klaar voor AI met NeuronAI framework. Ondersteunt Anthropic Claude, OpenAI, Google Gemini, Mistral en lokale Ollama modellen."
+                            />
+                            <FeatureCard
+                                title="Nederlandse Taal"
+                                description="Volledig in het Nederlands vertaalde gebruikersinterface. Alle labels, buttons, foutmeldingen en teksten zijn in het Nederlands."
                             />
                         </div>
                     </div>
@@ -128,26 +140,26 @@ export default function Welcome({
                 >
                     <div className="mx-auto max-w-6xl">
                         <h2 className="mb-12 text-center text-3xl font-semibold">
-                            The Stack
+                            De Stack
                         </h2>
-                        <div className="grid gap-6 md:grid-cols-2">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             <StackCard
                                 category="Backend"
                                 items={[
                                     {
                                         name: 'Laravel 12',
                                         description:
-                                            'The PHP framework for web artisans',
+                                            'Het PHP framework voor web artisans',
                                     },
                                     {
                                         name: 'Laravel Fortify',
                                         description:
-                                            'Backend authentication scaffolding',
+                                            'Backend authenticatie scaffolding',
                                     },
                                     {
                                         name: 'SQLite / MySQL',
                                         description:
-                                            'Flexible database support',
+                                            'Flexibele database ondersteuning',
                                     },
                                 ]}
                             />
@@ -157,16 +169,16 @@ export default function Welcome({
                                     {
                                         name: 'React 19',
                                         description:
-                                            'The library for building user interfaces',
+                                            'De bibliotheek voor het bouwen van gebruikersinterfaces',
                                     },
                                     {
                                         name: 'Inertia.js',
                                         description:
-                                            'The modern monolith approach',
+                                            'De moderne monoliet aanpak',
                                     },
                                     {
                                         name: 'TypeScript 5.7',
-                                        description: 'Type-safe JavaScript',
+                                        description: 'Type-veilig JavaScript',
                                     },
                                 ]}
                             />
@@ -181,12 +193,12 @@ export default function Welcome({
                                     {
                                         name: 'Radix UI',
                                         description:
-                                            'Unstyled, accessible components',
+                                            'Ongestyle, toegankelijke componenten',
                                     },
                                     {
                                         name: 'Lucide Icons',
                                         description:
-                                            'Beautiful & consistent icons',
+                                            'Mooie & consistente iconen',
                                     },
                                 ]}
                             />
@@ -196,16 +208,56 @@ export default function Welcome({
                                     {
                                         name: 'Vite 7',
                                         description:
-                                            'Next generation frontend tooling',
+                                            'Volgende generatie frontend tooling',
                                     },
                                     {
                                         name: 'ESLint & Prettier',
                                         description:
-                                            'Code quality and formatting',
+                                            'Code kwaliteit en formattering',
                                     },
                                     {
                                         name: 'Laravel Pint',
                                         description: 'PHP code style fixer',
+                                    },
+                                ]}
+                            />
+                            <StackCard
+                                category="AI Providers"
+                                items={[
+                                    {
+                                        name: 'NeuronAI',
+                                        description:
+                                            'PHP Agentic Framework voor AI',
+                                    },
+                                    {
+                                        name: 'Anthropic Claude',
+                                        description:
+                                            'Beste voor complexe taken',
+                                    },
+                                    {
+                                        name: 'OpenAI / Gemini / Mistral',
+                                        description:
+                                            'Meerdere providers ondersteund',
+                                    },
+                                ]}
+                            />
+                            <StackCard
+                                category="Authenticatie"
+                                items={[
+                                    {
+                                        name: 'Laravel Fortify',
+                                        description:
+                                            'Backend authenticatie scaffolding',
+                                    },
+                                    {
+                                        name: 'Laravel Socialite',
+                                        description:
+                                            'OAuth authenticatie (Microsoft)',
+                                    },
+                                    {
+                                        name: 'Tweefactor (2FA)',
+                                        description:
+                                            'TOTP authenticatie ingebouwd',
                                     },
                                 ]}
                             />
@@ -220,32 +272,32 @@ export default function Welcome({
                 >
                     <div className="mx-auto max-w-3xl">
                         <h2 className="mb-12 text-center text-3xl font-semibold">
-                            Getting Started
+                            Aan de slag
                         </h2>
                         <div className="space-y-6">
                             <Step
                                 number={1}
-                                title="Clone the repository"
+                                title="Clone de repository"
                                 code="git clone <repository-url> my-project"
                             />
                             <Step
                                 number={2}
-                                title="Install dependencies"
+                                title="Installeer dependencies"
                                 code="composer install && npm install"
                             />
                             <Step
                                 number={3}
-                                title="Set up environment"
+                                title="Stel de omgeving in"
                                 code="cp .env.example .env && php artisan key:generate"
                             />
                             <Step
                                 number={4}
-                                title="Run migrations"
+                                title="Voer migraties uit"
                                 code="php artisan migrate"
                             />
                             <Step
                                 number={5}
-                                title="Start development"
+                                title="Start ontwikkeling"
                                 code="composer dev"
                             />
                         </div>
@@ -259,7 +311,7 @@ export default function Welcome({
                 >
                     <div className="mx-auto max-w-4xl">
                         <h2 className="mb-12 text-center text-3xl font-semibold">
-                            Project Structure
+                            Project Structuur
                         </h2>
                         <div className="grid gap-6 md:grid-cols-2">
                             <div className="rounded-lg border border-[#e3e3e0] p-6 dark:border-[#3E3E3A]">
@@ -268,16 +320,16 @@ export default function Welcome({
                                 </h3>
                                 <pre className="overflow-x-auto text-sm text-[#706f6c] dark:text-[#A1A09A]">
                                     {`app/
-├── Actions/      # Fortify actions
+├── Actions/      # Fortify acties
 ├── Http/
 │   ├── Controllers/
 │   └── Middleware/
-├── Models/       # Eloquent models
+├── Models/       # Eloquent modellen
 └── Providers/    # Service providers
 
-config/           # Configuration files
-routes/           # Route definitions
-database/         # Migrations & seeders`}
+config/           # Configuratie bestanden
+routes/           # Route definities
+database/         # Migraties & seeders`}
                                 </pre>
                             </div>
                             <div className="rounded-lg border border-[#e3e3e0] p-6 dark:border-[#3E3E3A]">
@@ -286,14 +338,14 @@ database/         # Migrations & seeders`}
                                 </h3>
                                 <pre className="overflow-x-auto text-sm text-[#706f6c] dark:text-[#A1A09A]">
                                     {`resources/js/
-├── components/   # React components
+├── components/   # React componenten
 │   └── ui/       # Radix UI wrappers
 ├── hooks/        # Custom React hooks
-├── layouts/      # Layout components
-├── pages/        # Inertia pages
-│   ├── auth/     # Auth pages
-│   └── settings/ # Settings pages
-├── routes/       # Generated routes
+├── layouts/      # Layout componenten
+├── pages/        # Inertia pagina's
+│   ├── auth/     # Auth pagina's
+│   └── settings/ # Instellingen
+├── routes/       # Gegenereerde routes
 └── types/        # TypeScript types`}
                                 </pre>
                             </div>
@@ -305,28 +357,38 @@ database/         # Migrations & seeders`}
                 <section className="border-b border-[#e3e3e0] px-6 py-16 dark:border-[#3E3E3A]">
                     <div className="mx-auto max-w-6xl">
                         <h2 className="mb-12 text-center text-3xl font-semibold">
-                            Documentation
+                            Documentatie
                         </h2>
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             <DocLink
                                 href="https://laravel.com/docs"
                                 title="Laravel"
-                                description="Backend framework documentation"
+                                description="Backend framework documentatie"
                             />
                             <DocLink
                                 href="https://react.dev"
                                 title="React"
-                                description="Frontend library documentation"
+                                description="Frontend bibliotheek documentatie"
                             />
                             <DocLink
                                 href="https://inertiajs.com"
                                 title="Inertia.js"
-                                description="The modern monolith"
+                                description="De moderne monoliet"
                             />
                             <DocLink
                                 href="https://tailwindcss.com/docs"
                                 title="Tailwind CSS"
                                 description="Utility-first CSS framework"
+                            />
+                            <DocLink
+                                href="https://neuron-ai.dev"
+                                title="NeuronAI"
+                                description="PHP Agentic AI Framework"
+                            />
+                            <DocLink
+                                href="https://docs.anthropic.com"
+                                title="Anthropic"
+                                description="Claude AI documentatie"
                             />
                         </div>
                     </div>
@@ -336,8 +398,8 @@ database/         # Migrations & seeders`}
                 <footer className="px-6 py-8">
                     <div className="mx-auto max-w-6xl text-center text-sm text-[#706f6c] dark:text-[#A1A09A]">
                         <p>
-                            Built with care by Pontifexx Paddock. Ready for your
-                            next project.
+                            Met zorg gebouwd door Pontifexx Paddock. Klaar voor
+                            je volgende project.
                         </p>
                     </div>
                 </footer>

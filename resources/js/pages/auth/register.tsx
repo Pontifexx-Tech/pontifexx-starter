@@ -1,4 +1,5 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
+import MicrosoftIcon from '@/components/icons/microsoft-icon';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -12,10 +13,10 @@ import { store } from '@/routes/register';
 export default function Register() {
     return (
         <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
+            title="Account aanmaken"
+            description="Vul je gegevens in om een account aan te maken"
         >
-            <Head title="Register" />
+            <Head title="Registreren" />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -25,8 +26,27 @@ export default function Register() {
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
+                            <Link
+                                href="/auth/microsoft/redirect"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                            >
+                                <MicrosoftIcon className="h-5 w-5" />
+                                Doorgaan met Microsoft
+                            </Link>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">
+                                        Of doorgaan met e-mail
+                                    </span>
+                                </div>
+                            </div>
+
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Naam</Label>
                                 <Input
                                     id="name"
                                     type="text"
@@ -35,7 +55,7 @@ export default function Register() {
                                     tabIndex={1}
                                     autoComplete="name"
                                     name="name"
-                                    placeholder="Full name"
+                                    placeholder="Volledige naam"
                                 />
                                 <InputError
                                     message={errors.name}
@@ -44,7 +64,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">E-mailadres</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -52,13 +72,13 @@ export default function Register() {
                                     tabIndex={2}
                                     autoComplete="email"
                                     name="email"
-                                    placeholder="email@example.com"
+                                    placeholder="email@voorbeeld.nl"
                                 />
                                 <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">Wachtwoord</Label>
                                 <Input
                                     id="password"
                                     type="password"
@@ -66,14 +86,14 @@ export default function Register() {
                                     tabIndex={3}
                                     autoComplete="new-password"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="Wachtwoord"
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
                                 <Label htmlFor="password_confirmation">
-                                    Confirm password
+                                    Bevestig wachtwoord
                                 </Label>
                                 <Input
                                     id="password_confirmation"
@@ -82,7 +102,7 @@ export default function Register() {
                                     tabIndex={4}
                                     autoComplete="new-password"
                                     name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    placeholder="Bevestig wachtwoord"
                                 />
                                 <InputError
                                     message={errors.password_confirmation}
@@ -96,14 +116,14 @@ export default function Register() {
                                 data-test="register-user-button"
                             >
                                 {processing && <Spinner />}
-                                Create account
+                                Account aanmaken
                             </Button>
                         </div>
 
                         <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
+                            Heb je al een account?{' '}
                             <TextLink href={login()} tabIndex={6}>
-                                Log in
+                                Inloggen
                             </TextLink>
                         </div>
                     </>

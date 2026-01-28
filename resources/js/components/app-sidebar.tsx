@@ -31,7 +31,7 @@ const footerNavItems: NavItem[] = [
         icon: Folder,
     },
     {
-        title: 'Documentation',
+        title: 'Documentatie',
         href: 'https://laravel.com/docs/starter-kits#react',
         icon: BookOpen,
     },
