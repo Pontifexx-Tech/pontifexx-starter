@@ -9,8 +9,8 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
@@ -24,18 +24,26 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentatie',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+const footerNavItems: NavItem[] = [];
+
+function SidebarLogo() {
+    const { state } = useSidebar();
+    const isCollapsed = state === 'collapsed';
+
+    if (isCollapsed) {
+        return null;
+    }
+
+    return (
+        <Link
+            href={dashboard()}
+            prefetch
+            className="flex w-full items-center justify-center py-2"
+        >
+            <AppLogo />
+        </Link>
+    );
+}
 
 export function AppSidebar() {
     return (
@@ -43,11 +51,7 @@ export function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
+                        <SidebarLogo />
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
