@@ -12,6 +12,14 @@ Een moderne, productieklare Laravel + React starter kit met alles wat je nodig h
 
 ## Installatie
 
+### Met Laravel Herd
+
+```bash
+laravel new my-project --using=pontifexx/starter-kit
+```
+
+### Handmatig
+
 ```bash
 # Clone repository
 git clone <repository-url> my-project

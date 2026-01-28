@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "pontifexx-tech/pontifexx-starter",
+    "name": "pontifexx/starter-kit",
     "type": "project",
     "description": "The skeleton application for a real Pontifexx POC",
     "keywords": [
