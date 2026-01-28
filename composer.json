@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "Pontifexx-tech/pontifexx-starter",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "The skeleton application for a real Pontifexx POC",
     "keywords": [
         "laravel",
-        "framework"
+        "Pontifexx"
     ],
     "license": "MIT",
     "require": {
