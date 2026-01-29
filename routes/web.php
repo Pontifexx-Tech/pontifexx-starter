@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AI\ChatController;
 use App\Http\Controllers\Auth\SocialiteController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +15,15 @@ Route::get('/', function () {
 Route::get('dashboard', function () {
     return Inertia::render('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// AI Chat Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('ai-chat', function () {
+        return Inertia::render('ai-chat');
+    })->name('ai-chat');
+
+    Route::post('api/chat', [ChatController::class, 'chat'])->name('api.chat');
+});
 
 // Socialite OAuth Routes
 Route::middleware('guest')->group(function () {

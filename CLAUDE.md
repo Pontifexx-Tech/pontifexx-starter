@@ -674,6 +674,94 @@ return [
 ];
 ```
 
+## AI Chat Interface (Vercel AI SDK)
+
+This starter kit includes a pre-built AI chat interface that combines NeuronAI (backend) with the Vercel AI SDK (frontend).
+
+### Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  React Frontend │────▶│  Laravel Backend │────▶│   AI Provider   │
+│  (AI SDK)       │◀────│  (NeuronAI)      │◀────│   (Anthropic)   │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+     useChat()           POST /api/chat           Streaming Response
+```
+
+### Frontend (React + AI SDK)
+
+The chat interface uses the Vercel AI SDK `useChat` hook:
+
+```typescript
+import { useChat } from 'ai/react';
+
+const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+    api: '/api/chat',
+});
+```
+
+Located at: `resources/js/pages/ai-chat.tsx`
+
+### Backend (Laravel + NeuronAI)
+
+The streaming endpoint handles AI responses:
+
+```php
+// app/Http/Controllers/AI/ChatController.php
+public function chat(Request $request): StreamedResponse
+{
+    // Validates messages array
+    // Streams response using AI SDK Data Stream Protocol
+    // Compatible with useChat hook
+}
+```
+
+### AI SDK Data Stream Protocol
+
+The backend streams responses in the AI SDK format:
+
+```
+0:"Hello "      # Text chunk
+0:"world!"      # Text chunk
+d:{"finishReason":"stop"}  # Finish message
+```
+
+### Integrating with NeuronAI
+
+To use real AI responses, update `ChatController.php`:
+
+```php
+use App\AI\Agents\AssistantAgent;
+
+public function chat(Request $request): StreamedResponse
+{
+    $messages = $request->input('messages');
+    $lastMessage = collect($messages)->last()['content'];
+
+    return response()->stream(function () use ($lastMessage) {
+        $agent = new AssistantAgent();
+        
+        foreach ($agent->stream($lastMessage) as $chunk) {
+            echo '0:"' . addslashes($chunk->content) . "\"\n";
+            ob_flush();
+            flush();
+        }
+        
+        echo "d:{\"finishReason\":\"stop\"}\n";
+    }, 200, [
+        'Content-Type' => 'text/plain; charset=utf-8',
+        'Cache-Control' => 'no-cache',
+    ]);
+}
+```
+
+### Routes
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/ai-chat` | GET | Chat interface page |
+| `/api/chat` | POST | Streaming chat endpoint |
+
 ## Resources
 
 - [Laravel Documentation](https://laravel.com/docs)
@@ -685,3 +773,4 @@ return [
 - [NeuronAI Documentation](https://neuron-ai.dev)
 - [Anthropic Documentation](https://docs.anthropic.com)
 - [OpenAI Documentation](https://platform.openai.com/docs)
+- [Vercel AI SDK Documentation](https://ai-sdk.dev)
