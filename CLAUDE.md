@@ -674,6 +674,133 @@ return [
 ];
 ```
 
+## CRUD & DataTable
+
+This starter kit includes a complete CRUD example with an advanced DataTable component featuring pagination, search, sorting, and column filtering.
+
+### DataTable Component
+
+Located at: `resources/js/components/ui/data-table.tsx`
+
+Features:
+- **Server-side pagination** - Efficient for large datasets
+- **Search** - Debounced search across multiple columns
+- **Sorting** - Click column headers to sort ascending/descending
+- **Column filters** - Dropdown filters for enum/status columns
+- **Per-page selection** - 10, 25, 50, or 100 items per page
+- **URL state** - Filters persist in URL for bookmarking/sharing
+
+### Usage Example
+
+```typescript
+import { DataTable, type Column, type Filter } from '@/components/ui/data-table';
+
+const columns: Column<Project>[] = [
+    {
+        key: 'name',
+        label: 'Naam',
+        sortable: true,
+        render: (item) => <span className="font-medium">{item.name}</span>,
+    },
+    {
+        key: 'status',
+        label: 'Status',
+        sortable: true,
+        render: (item) => <Badge>{item.status}</Badge>,
+    },
+];
+
+const filters: Filter[] = [
+    {
+        key: 'status',
+        label: 'Status',
+        options: [
+            { value: 'active', label: 'Actief' },
+            { value: 'completed', label: 'Voltooid' },
+        ],
+    },
+];
+
+<DataTable
+    data={projects.data}
+    columns={columns}
+    pagination={pagination}
+    filters={filters}
+    currentFilters={filters}
+    routeName="projects.index"
+    searchPlaceholder="Zoek projecten..."
+    actions={(item) => <ActionButtons item={item} />}
+/>
+```
+
+### Backend Controller Pattern
+
+```php
+public function index(Request $request): Response
+{
+    $query = Project::query()
+        ->where('user_id', $request->user()->id)
+        ->search($request->input('search'))
+        ->status($request->input('status'))
+        ->sorted(
+            $request->input('sort_by'),
+            $request->input('sort_direction', 'desc')
+        );
+
+    $projects = $query->paginate($request->input('per_page', 10))
+        ->withQueryString();
+
+    return Inertia::render('projects/index', [
+        'projects' => $projects,
+        'filters' => [
+            'search' => $request->input('search', ''),
+            'status' => $request->input('status', ''),
+            'sort_by' => $request->input('sort_by', ''),
+            'sort_direction' => $request->input('sort_direction', 'desc'),
+            'per_page' => (int) $request->input('per_page', 10),
+        ],
+    ]);
+}
+```
+
+### Model Scopes
+
+Add reusable filter scopes to your models:
+
+```php
+public function scopeSearch($query, ?string $search)
+{
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+    return $query;
+}
+
+public function scopeSorted($query, ?string $sortBy, string $direction = 'asc')
+{
+    if ($sortBy) {
+        $query->orderBy($sortBy, $direction);
+    } else {
+        $query->latest();
+    }
+    return $query;
+}
+```
+
+### Example Files
+
+| File | Description |
+|------|-------------|
+| `app/Models/Project.php` | Model with filter scopes |
+| `app/Http/Controllers/ProjectController.php` | CRUD controller |
+| `app/Policies/ProjectPolicy.php` | Authorization policy |
+| `resources/js/pages/projects/index.tsx` | List page with DataTable |
+| `resources/js/pages/projects/create.tsx` | Create form |
+| `resources/js/pages/projects/edit.tsx` | Edit form |
+
 ## AI Chat Interface (Vercel AI SDK)
 
 This starter kit includes a pre-built AI chat interface that combines NeuronAI (backend) with the Vercel AI SDK (frontend).

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AI\ChatController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -23,6 +24,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('ai-chat');
 
     Route::post('api/chat', [ChatController::class, 'chat'])->name('api.chat');
+});
+
+// Projects CRUD Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('projects', ProjectController::class)->except(['show']);
 });
 
 // Socialite OAuth Routes
