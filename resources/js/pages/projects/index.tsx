@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import {
     DataTable,
     type Column,
-    type Filter,
     type PaginationData,
 } from '@/components/ui/data-table';
 import {
@@ -44,14 +43,7 @@ interface Props {
         from: number | null;
         to: number | null;
     };
-    filters: {
-        search: string;
-        status: string;
-        priority: string;
-        sort_by: string;
-        sort_direction: string;
-        per_page: number;
-    };
+    filters: Record<string, string | number | undefined>;
     statuses: FilterOption[];
     priorities: FilterOption[];
 }
@@ -92,6 +84,8 @@ export default function ProjectsIndex({
             key: 'name',
             label: 'Naam',
             sortable: true,
+            filterable: true,
+            filterType: 'text',
             render: (project) => (
                 <div>
                     <div className="font-medium">{project.name}</div>
@@ -107,6 +101,9 @@ export default function ProjectsIndex({
             key: 'status',
             label: 'Status',
             sortable: true,
+            filterable: true,
+            filterType: 'select',
+            filterOptions: statuses,
             render: (project) => (
                 <Badge
                     variant={
@@ -126,6 +123,9 @@ export default function ProjectsIndex({
             key: 'priority',
             label: 'Prioriteit',
             sortable: true,
+            filterable: true,
+            filterType: 'select',
+            filterOptions: priorities,
             render: (project) => (
                 <Badge
                     variant={
@@ -145,6 +145,8 @@ export default function ProjectsIndex({
             key: 'budget',
             label: 'Budget',
             sortable: true,
+            filterable: true,
+            filterType: 'number',
             render: (project) =>
                 project.budget
                     ? new Intl.NumberFormat('nl-NL', {
@@ -155,8 +157,10 @@ export default function ProjectsIndex({
         },
         {
             key: 'start_date',
-            label: 'Start',
+            label: 'Startdatum',
             sortable: true,
+            filterable: true,
+            filterType: 'dateRange',
             render: (project) =>
                 project.start_date
                     ? new Date(project.start_date).toLocaleDateString('nl-NL')
@@ -166,21 +170,10 @@ export default function ProjectsIndex({
             key: 'created_at',
             label: 'Aangemaakt',
             sortable: true,
+            filterable: true,
+            filterType: 'dateRange',
             render: (project) =>
                 new Date(project.created_at).toLocaleDateString('nl-NL'),
-        },
-    ];
-
-    const tableFilters: Filter[] = [
-        {
-            key: 'status',
-            label: 'Status',
-            options: statuses,
-        },
-        {
-            key: 'priority',
-            label: 'Prioriteit',
-            options: priorities,
         },
     ];
 
@@ -226,7 +219,6 @@ export default function ProjectsIndex({
                     data={projects.data}
                     columns={columns}
                     pagination={pagination}
-                    filters={tableFilters}
                     currentFilters={filters}
                     baseUrl="/projects"
                     searchPlaceholder="Zoek projecten..."

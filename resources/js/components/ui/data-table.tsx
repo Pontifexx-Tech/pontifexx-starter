@@ -4,15 +4,24 @@ import {
     ArrowDown,
     ArrowUp,
     ArrowUpDown,
+    Calendar,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
     ChevronsRight,
+    Filter,
     Search,
+    SlidersHorizontal,
     X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -34,6 +43,9 @@ export interface Column<T> {
     key: string;
     label: string;
     sortable?: boolean;
+    filterable?: boolean;
+    filterType?: 'text' | 'select' | 'number' | 'date' | 'dateRange';
+    filterOptions?: FilterOption[];
     render?: (item: T) => React.ReactNode;
     className?: string;
 }
@@ -41,12 +53,6 @@ export interface Column<T> {
 export interface FilterOption {
     value: string;
     label: string;
-}
-
-export interface Filter {
-    key: string;
-    label: string;
-    options: FilterOption[];
 }
 
 export interface PaginationData {
@@ -62,7 +68,6 @@ export interface DataTableProps<T> {
     data: T[];
     columns: Column<T>[];
     pagination: PaginationData;
-    filters?: Filter[];
     currentFilters: {
         search?: string;
         sort_by?: string;
@@ -80,7 +85,6 @@ export function DataTable<T extends { id: number | string }>({
     data,
     columns,
     pagination,
-    filters = [],
     currentFilters,
     baseUrl,
     searchPlaceholder = 'Zoeken...',
@@ -90,6 +94,38 @@ export function DataTable<T extends { id: number | string }>({
     const [searchValue, setSearchValue] = React.useState(
         currentFilters.search || ''
     );
+    const [columnFilters, setColumnFilters] = React.useState<
+        Record<string, string>
+    >(() => {
+        const filters: Record<string, string> = {};
+        columns.forEach((col) => {
+            if (col.filterable) {
+                const filterKey = `filter_${col.key}`;
+                const minKey = `${col.key}_min`;
+                const maxKey = `${col.key}_max`;
+                const fromKey = `${col.key}_from`;
+                const toKey = `${col.key}_to`;
+
+                if (currentFilters[filterKey]) {
+                    filters[filterKey] = String(currentFilters[filterKey]);
+                }
+                if (currentFilters[minKey]) {
+                    filters[minKey] = String(currentFilters[minKey]);
+                }
+                if (currentFilters[maxKey]) {
+                    filters[maxKey] = String(currentFilters[maxKey]);
+                }
+                if (currentFilters[fromKey]) {
+                    filters[fromKey] = String(currentFilters[fromKey]);
+                }
+                if (currentFilters[toKey]) {
+                    filters[toKey] = String(currentFilters[toKey]);
+                }
+            }
+        });
+        return filters;
+    });
+
     const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
     const updateFilters = React.useCallback(
@@ -149,9 +185,23 @@ export function DataTable<T extends { id: number | string }>({
         [currentFilters.sort_by, currentFilters.sort_direction, updateFilters]
     );
 
-    const handleFilterChange = React.useCallback(
-        (key: string, value: string) => {
-            updateFilters({ [key]: value || undefined, page: 1 });
+    const handleColumnFilter = React.useCallback(
+        (key: string, value: string | undefined) => {
+            setColumnFilters((prev) => ({
+                ...prev,
+                [key]: value || '',
+            }));
+        },
+        []
+    );
+
+    const applyColumnFilter = React.useCallback(
+        (filterUpdates: Record<string, string | undefined>) => {
+            const updates: Record<string, string | undefined> = { page: '1' };
+            Object.entries(filterUpdates).forEach(([key, value]) => {
+                updates[key] = value || undefined;
+            });
+            updateFilters(updates);
         },
         [updateFilters]
     );
@@ -170,14 +220,34 @@ export function DataTable<T extends { id: number | string }>({
         [updateFilters]
     );
 
-    const clearFilters = React.useCallback(() => {
+    const clearAllFilters = React.useCallback(() => {
         setSearchValue('');
+        setColumnFilters({});
         router.get(baseUrl, {}, { preserveState: true });
     }, [baseUrl]);
 
-    const hasActiveFilters =
-        currentFilters.search ||
-        filters.some((f) => currentFilters[f.key]);
+    const getActiveFilterCount = () => {
+        let count = 0;
+        if (currentFilters.search) count++;
+        columns.forEach((col) => {
+            if (col.filterable) {
+                const filterKey = `filter_${col.key}`;
+                const minKey = `${col.key}_min`;
+                const maxKey = `${col.key}_max`;
+                const fromKey = `${col.key}_from`;
+                const toKey = `${col.key}_to`;
+
+                if (currentFilters[filterKey]) count++;
+                if (currentFilters[minKey]) count++;
+                if (currentFilters[maxKey]) count++;
+                if (currentFilters[fromKey]) count++;
+                if (currentFilters[toKey]) count++;
+            }
+        });
+        return count;
+    };
+
+    const activeFilterCount = getActiveFilterCount();
 
     const getSortIcon = (column: string) => {
         if (currentFilters.sort_by !== column) {
@@ -190,9 +260,11 @@ export function DataTable<T extends { id: number | string }>({
         );
     };
 
+    const filterableColumns = columns.filter((col) => col.filterable);
+
     return (
         <div className="space-y-4">
-            {/* Filters */}
+            {/* Filters Bar */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
                     {/* Search */}
@@ -206,44 +278,66 @@ export function DataTable<T extends { id: number | string }>({
                         />
                     </div>
 
-                    {/* Column Filters */}
-                    {filters.map((filter) => (
-                        <Select
-                            key={filter.key}
-                            value={String(currentFilters[filter.key] || '_all')}
-                            onValueChange={(value) =>
-                                handleFilterChange(filter.key, value === '_all' ? '' : value)
-                            }
-                        >
-                            <SelectTrigger className="w-full sm:w-[150px]">
-                                <SelectValue placeholder={filter.label} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="_all">
-                                    Alle {filter.label.toLowerCase()}
-                                </SelectItem>
-                                {filter.options.map((option) => (
-                                    <SelectItem
-                                        key={option.value}
-                                        value={option.value}
-                                    >
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    ))}
+                    {/* Advanced Filters Popover */}
+                    {filterableColumns.length > 0 && (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="h-9">
+                                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                                    Filters
+                                    {activeFilterCount > 0 && (
+                                        <span className="bg-primary text-primary-foreground ml-2 flex h-5 w-5 items-center justify-center rounded-full text-xs">
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                className="w-80"
+                                align="start"
+                            >
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-medium">
+                                            Kolom Filters
+                                        </h4>
+                                        {activeFilterCount > 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={clearAllFilters}
+                                                className="h-8 px-2 text-xs"
+                                            >
+                                                Alles wissen
+                                            </Button>
+                                        )}
+                                    </div>
 
-                    {/* Clear Filters */}
-                    {hasActiveFilters && (
+                                    {filterableColumns.map((column) => (
+                                        <ColumnFilter
+                                            key={column.key}
+                                            column={column}
+                                            currentFilters={currentFilters}
+                                            columnFilters={columnFilters}
+                                            onFilterChange={handleColumnFilter}
+                                            onApply={applyColumnFilter}
+                                        />
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    )}
+
+                    {/* Clear All Filters */}
+                    {activeFilterCount > 0 && (
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={clearFilters}
+                            onClick={clearAllFilters}
                             className="h-9"
                         >
                             <X className="mr-2 h-4 w-4" />
-                            Wissen
+                            Filters wissen ({activeFilterCount})
                         </Button>
                     )}
                 </div>
@@ -265,6 +359,104 @@ export function DataTable<T extends { id: number | string }>({
                 </Select>
             </div>
 
+            {/* Active Filters Display */}
+            {activeFilterCount > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {currentFilters.search && (
+                        <FilterBadge
+                            label={`Zoeken: "${currentFilters.search}"`}
+                            onRemove={() => {
+                                setSearchValue('');
+                                updateFilters({ search: undefined, page: 1 });
+                            }}
+                        />
+                    )}
+                    {filterableColumns.map((column) => {
+                        const badges: React.ReactNode[] = [];
+                        const filterKey = `filter_${column.key}`;
+                        const minKey = `${column.key}_min`;
+                        const maxKey = `${column.key}_max`;
+                        const fromKey = `${column.key}_from`;
+                        const toKey = `${column.key}_to`;
+
+                        if (currentFilters[filterKey]) {
+                            const option = column.filterOptions?.find(
+                                (o) => o.value === currentFilters[filterKey]
+                            );
+                            badges.push(
+                                <FilterBadge
+                                    key={filterKey}
+                                    label={`${column.label}: ${option?.label || currentFilters[filterKey]}`}
+                                    onRemove={() =>
+                                        updateFilters({
+                                            [filterKey]: undefined,
+                                            page: 1,
+                                        })
+                                    }
+                                />
+                            );
+                        }
+
+                        if (
+                            currentFilters[minKey] ||
+                            currentFilters[maxKey]
+                        ) {
+                            const min = currentFilters[minKey];
+                            const max = currentFilters[maxKey];
+                            let label = `${column.label}: `;
+                            if (min && max) {
+                                label += `${min} - ${max}`;
+                            } else if (min) {
+                                label += `≥ ${min}`;
+                            } else if (max) {
+                                label += `≤ ${max}`;
+                            }
+                            badges.push(
+                                <FilterBadge
+                                    key={`${column.key}_range`}
+                                    label={label}
+                                    onRemove={() =>
+                                        updateFilters({
+                                            [minKey]: undefined,
+                                            [maxKey]: undefined,
+                                            page: 1,
+                                        })
+                                    }
+                                />
+                            );
+                        }
+
+                        if (currentFilters[fromKey] || currentFilters[toKey]) {
+                            const from = currentFilters[fromKey];
+                            const to = currentFilters[toKey];
+                            let label = `${column.label}: `;
+                            if (from && to) {
+                                label += `${from} t/m ${to}`;
+                            } else if (from) {
+                                label += `vanaf ${from}`;
+                            } else if (to) {
+                                label += `t/m ${to}`;
+                            }
+                            badges.push(
+                                <FilterBadge
+                                    key={`${column.key}_daterange`}
+                                    label={label}
+                                    onRemove={() =>
+                                        updateFilters({
+                                            [fromKey]: undefined,
+                                            [toKey]: undefined,
+                                            page: 1,
+                                        })
+                                    }
+                                />
+                            );
+                        }
+
+                        return badges;
+                    })}
+                </div>
+            )}
+
             {/* Table */}
             <div className="rounded-md border">
                 <Table>
@@ -275,21 +467,23 @@ export function DataTable<T extends { id: number | string }>({
                                     key={column.key}
                                     className={column.className}
                                 >
-                                    {column.sortable ? (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="-ml-3 h-8 data-[state=open]:bg-accent"
-                                            onClick={() =>
-                                                handleSort(column.key)
-                                            }
-                                        >
-                                            {column.label}
-                                            {getSortIcon(column.key)}
-                                        </Button>
-                                    ) : (
-                                        column.label
-                                    )}
+                                    <div className="flex items-center">
+                                        {column.sortable ? (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="-ml-3 h-8 data-[state=open]:bg-accent"
+                                                onClick={() =>
+                                                    handleSort(column.key)
+                                                }
+                                            >
+                                                {column.label}
+                                                {getSortIcon(column.key)}
+                                            </Button>
+                                        ) : (
+                                            column.label
+                                        )}
+                                    </div>
                                 </TableHead>
                             ))}
                             {actions && (
@@ -406,5 +600,223 @@ export function DataTable<T extends { id: number | string }>({
                 </div>
             </div>
         </div>
+    );
+}
+
+// Column Filter Component
+function ColumnFilter<T>({
+    column,
+    currentFilters,
+    columnFilters,
+    onFilterChange,
+    onApply,
+}: {
+    column: Column<T>;
+    currentFilters: Record<string, string | number | undefined>;
+    columnFilters: Record<string, string>;
+    onFilterChange: (key: string, value: string | undefined) => void;
+    onApply: (filters: Record<string, string | undefined>) => void;
+}) {
+    const filterKey = `filter_${column.key}`;
+    const minKey = `${column.key}_min`;
+    const maxKey = `${column.key}_max`;
+    const fromKey = `${column.key}_from`;
+    const toKey = `${column.key}_to`;
+
+    const [localMin, setLocalMin] = React.useState(
+        String(currentFilters[minKey] || '')
+    );
+    const [localMax, setLocalMax] = React.useState(
+        String(currentFilters[maxKey] || '')
+    );
+    const [localFrom, setLocalFrom] = React.useState(
+        String(currentFilters[fromKey] || '')
+    );
+    const [localTo, setLocalTo] = React.useState(
+        String(currentFilters[toKey] || '')
+    );
+    const [localText, setLocalText] = React.useState(
+        String(currentFilters[filterKey] || '')
+    );
+
+    switch (column.filterType) {
+        case 'select':
+            return (
+                <div className="space-y-2">
+                    <Label className="text-sm">{column.label}</Label>
+                    <Select
+                        value={String(currentFilters[filterKey] || '_all')}
+                        onValueChange={(value) =>
+                            onApply({
+                                [filterKey]: value === '_all' ? undefined : value,
+                            })
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={`Selecteer ${column.label.toLowerCase()}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="_all">Alle</SelectItem>
+                            {column.filterOptions?.map((option) => (
+                                <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            );
+
+        case 'number':
+            return (
+                <div className="space-y-2">
+                    <Label className="text-sm">{column.label}</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            type="number"
+                            placeholder="Min"
+                            value={localMin}
+                            onChange={(e) => setLocalMin(e.target.value)}
+                            className="h-8"
+                        />
+                        <Input
+                            type="number"
+                            placeholder="Max"
+                            value={localMax}
+                            onChange={(e) => setLocalMax(e.target.value)}
+                            className="h-8"
+                        />
+                    </div>
+                    <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                            onApply({
+                                [minKey]: localMin || undefined,
+                                [maxKey]: localMax || undefined,
+                            })
+                        }
+                    >
+                        Toepassen
+                    </Button>
+                </div>
+            );
+
+        case 'date':
+            return (
+                <div className="space-y-2">
+                    <Label className="text-sm">{column.label}</Label>
+                    <Input
+                        type="date"
+                        value={localFrom}
+                        onChange={(e) => setLocalFrom(e.target.value)}
+                        className="h-8"
+                    />
+                    <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                            onApply({
+                                [fromKey]: localFrom || undefined,
+                            })
+                        }
+                    >
+                        Toepassen
+                    </Button>
+                </div>
+            );
+
+        case 'dateRange':
+            return (
+                <div className="space-y-2">
+                    <Label className="text-sm">{column.label}</Label>
+                    <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                            <Label className="text-muted-foreground text-xs">
+                                Van
+                            </Label>
+                            <Input
+                                type="date"
+                                value={localFrom}
+                                onChange={(e) => setLocalFrom(e.target.value)}
+                                className="h-8"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <Label className="text-muted-foreground text-xs">
+                                Tot
+                            </Label>
+                            <Input
+                                type="date"
+                                value={localTo}
+                                onChange={(e) => setLocalTo(e.target.value)}
+                                className="h-8"
+                            />
+                        </div>
+                    </div>
+                    <Button
+                        size="sm"
+                        className="w-full"
+                        onClick={() =>
+                            onApply({
+                                [fromKey]: localFrom || undefined,
+                                [toKey]: localTo || undefined,
+                            })
+                        }
+                    >
+                        Toepassen
+                    </Button>
+                </div>
+            );
+
+        case 'text':
+        default:
+            return (
+                <div className="space-y-2">
+                    <Label className="text-sm">{column.label}</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder={`Filter ${column.label.toLowerCase()}...`}
+                            value={localText}
+                            onChange={(e) => setLocalText(e.target.value)}
+                            className="h-8"
+                        />
+                        <Button
+                            size="sm"
+                            onClick={() =>
+                                onApply({
+                                    [filterKey]: localText || undefined,
+                                })
+                            }
+                        >
+                            <Filter className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            );
+    }
+}
+
+// Filter Badge Component
+function FilterBadge({
+    label,
+    onRemove,
+}: {
+    label: string;
+    onRemove: () => void;
+}) {
+    return (
+        <span className="bg-secondary text-secondary-foreground inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm">
+            {label}
+            <button
+                onClick={onRemove}
+                className="hover:bg-secondary-foreground/20 ml-1 rounded-full p-0.5"
+            >
+                <X className="h-3 w-3" />
+            </button>
+        </span>
     );
 }

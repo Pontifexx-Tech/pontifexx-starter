@@ -676,7 +676,7 @@ return [
 
 ## CRUD & DataTable
 
-This starter kit includes a complete CRUD example with an advanced DataTable component featuring pagination, search, sorting, and column filtering.
+This starter kit includes a complete CRUD example with an advanced DataTable component featuring pagination, search, sorting, and advanced column filtering.
 
 ### DataTable Component
 
@@ -684,40 +684,59 @@ Located at: `resources/js/components/ui/data-table.tsx`
 
 Features:
 - **Server-side pagination** - Efficient for large datasets
-- **Search** - Debounced search across multiple columns
+- **Global search** - Debounced search across multiple columns
 - **Sorting** - Click column headers to sort ascending/descending
-- **Column filters** - Dropdown filters for enum/status columns
+- **Advanced column filters**:
+  - **Text filter** - Search within a specific column
+  - **Select filter** - Dropdown for enum/status columns
+  - **Number filter** - Min/max range for numeric columns
+  - **Date filter** - Single date filter
+  - **Date range filter** - From/to date range
 - **Per-page selection** - 10, 25, 50, or 100 items per page
 - **URL state** - Filters persist in URL for bookmarking/sharing
+- **Filter badges** - Visual display of active filters with quick remove
 
 ### Usage Example
 
 ```typescript
-import { DataTable, type Column, type Filter } from '@/components/ui/data-table';
+import { DataTable, type Column } from '@/components/ui/data-table';
 
 const columns: Column<Project>[] = [
     {
         key: 'name',
         label: 'Naam',
         sortable: true,
+        filterable: true,
+        filterType: 'text',
         render: (item) => <span className="font-medium">{item.name}</span>,
     },
     {
         key: 'status',
         label: 'Status',
         sortable: true,
+        filterable: true,
+        filterType: 'select',
+        filterOptions: [
+            { value: 'actief', label: 'Actief' },
+            { value: 'voltooid', label: 'Voltooid' },
+        ],
         render: (item) => <Badge>{item.status}</Badge>,
     },
-];
-
-const filters: Filter[] = [
     {
-        key: 'status',
-        label: 'Status',
-        options: [
-            { value: 'active', label: 'Actief' },
-            { value: 'completed', label: 'Voltooid' },
-        ],
+        key: 'budget',
+        label: 'Budget',
+        sortable: true,
+        filterable: true,
+        filterType: 'number',
+        render: (item) => formatCurrency(item.budget),
+    },
+    {
+        key: 'start_date',
+        label: 'Startdatum',
+        sortable: true,
+        filterable: true,
+        filterType: 'dateRange',
+        render: (item) => formatDate(item.start_date),
     },
 ];
 
@@ -725,13 +744,22 @@ const filters: Filter[] = [
     data={projects.data}
     columns={columns}
     pagination={pagination}
-    filters={filters}
     currentFilters={filters}
-    routeName="projects.index"
+    baseUrl="/projects"
     searchPlaceholder="Zoek projecten..."
     actions={(item) => <ActionButtons item={item} />}
 />
 ```
+
+### Filter Types
+
+| Type | Description | URL Parameters |
+|------|-------------|----------------|
+| `text` | Text search within column | `filter_{column}` |
+| `select` | Dropdown with predefined options | `filter_{column}` |
+| `number` | Min/max numeric range | `{column}_min`, `{column}_max` |
+| `date` | Single date picker | `{column}_from` |
+| `dateRange` | From/to date range | `{column}_from`, `{column}_to` |
 
 ### Backend Controller Pattern
 
