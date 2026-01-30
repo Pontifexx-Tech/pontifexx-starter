@@ -293,7 +293,7 @@ export function DataTable<T extends { id: number | string }>({
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent
-                                className="w-80"
+                                className="w-96"
                                 align="start"
                             >
                                 <div className="space-y-4">
